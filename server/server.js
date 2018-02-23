@@ -1,3 +1,5 @@
+require('./config/config');
+
 const express = require('express');
 
 const app = express();
@@ -14,23 +16,25 @@ app.get('/', (req, res) => {
 app.get('/api/imagesearch/:searchterm', async (req, res) => {
     const searchterm = req.params.searchterm;
     const offset = req.query.offset;
-    if (offset < 1) {
+    if (offset < 1 && searchterm.trim() === '') {
         return res.status(400).send({
-            error: 'Offset must be greater than 0)'
+            error: 'Offset must be greater than 0 and search term must contain a character'
         });
     }
 
-    let search = await Search.findOne({ term: searchterm });
+    const newSearch = new Search({
+        term: searchterm
+    });
 
-    if (!search) {
-        const newSearch = new Search({
-            term: searchterm
-        });
-
-        await newSearch.save();
-    }
+    await newSearch.save();
 
     const images = await imageSearch(searchterm, offset);
+    res.send(images);
+});
+
+
+app.get('/api/latest/imagesearch/', async (req, res) => {
+    var images = await Search.find({}, 'when term -_id').limit(10);
     res.send(images);
 });
 
@@ -38,3 +42,5 @@ app.listen(port, () => {
     console.log(`Server is up on ${port}`);
 });
 
+
+module.exports = { app };
