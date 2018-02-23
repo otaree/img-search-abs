@@ -1,4 +1,4 @@
-let env = process.env.ENV || 'development';
+let env = process.env.NODE_ENV || 'development';
 
 if (env = 'development') {
     process.env.MONGODB_URI = 'mongodb://localhost/search-img';
